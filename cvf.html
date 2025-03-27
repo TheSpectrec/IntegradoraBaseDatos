@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Control de Visitas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Animación del fondo */
+        @keyframes moverFondo {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .bg-animado {
+            background: linear-gradient(to right, #7A4A32, #BBA996);
+            background-size: 200% 200%;
+            animation: moverFondo 8s infinite alternate ease-in-out;
+        }
+
+        /* Sombra más marcada en la parte clara superior */
+        .header-shadow {
+            background: linear-gradient(to right, #D3D3C5, #BEBEAA);
+            height: 100px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Sombra más fuerte en la tarjeta de inicio de sesión */
+        .card-shadow {
+            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Botón de ingresar con color #71795B */
+        .btn-ingresar {
+            background-color: #71795B;
+            border-color: #5E6550;
+            color: white;
+        }
+        .btn-ingresar:hover {
+            background-color: #5E6550;
+        }
+
+        /* Botón de mostrar en gris más oscuro */
+        .btn-mostrar {
+            background-color: #A0A0A0;
+            color: white;
+            border-color: #8B8B8B;
+        }
+        .btn-mostrar:hover {
+            background-color: #8B8B8B;
+        }
+
+        /* Mensaje de error */
+        .error-text {
+            color: red;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="w-100 min-vh-100 d-flex flex-column">
+    <!-- Encabezado reducido con sombra fuerte -->
+    <div class="w-100 py-2 px-4 d-flex align-items-center shadow-lg header-shadow">
+        <img src="./src/resources/LOGOTIPO.png" alt="Logo" style="width: 160px; height: auto;">
+        <div class="text-center flex-grow-1">
+            <h2 class="fw-bold text-uppercase mb-0">Control de Visitas</h2>
+            <h4 class="fw-bold text-uppercase mb-0">A Fraccionamiento</h4>
+        </div>
+    </div>
+
+    <!-- Fondo degradado animado -->
+    <div class="flex-grow-1 w-100 d-flex justify-content-center align-items-center bg-animado">
+
+        <!-- Tarjeta de inicio de sesión con sombra más fuerte -->
+        <div class="card shadow-lg border-0 card-shadow" style="width: 350px; background-color: #CBCABE;">
+            <div class="card-body">
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo</label>
+                        <input type="email" class="form-control border" id="email" placeholder="ejemplo@gmail.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control border" id="password" placeholder="Contraseña" required>
+                            <button class="btn btn-mostrar" type="button" id="togglePassword">
+                                Mostrar
+                            </button>
+                        </div>
+                        <small class="error-text" id="passwordError">La contraseña debe tener al menos 8 caracteres.</small>
+                    </div>
+                    <button type="submit" class="btn btn-ingresar w-100">Ingresar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Mostrar/Ocultar contraseña
+    document.getElementById("togglePassword").addEventListener("click", function() {
+        var passwordField = document.getElementById("password");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            this.textContent = "Ocultar";
+        } else {
+            passwordField.type = "password";
+            this.textContent = "Mostrar";
+        }
+    });
+
+    // Validación de la contraseña
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+        var passwordField = document.getElementById("password");
+        var passwordError = document.getElementById("passwordError");
+
+        if (passwordField.value.length < 8) {
+            event.preventDefault(); // Evita el envío del formulario
+            passwordError.style.display = "block"; // Muestra el mensaje de error
+            passwordField.classList.add("border-danger"); // Resalta el input en rojo
+        } else {
+            passwordError.style.display = "none"; // Oculta el mensaje si es válido
+            passwordField.classList.remove("border-danger");
+        }
+    });
+</script>
+</body>
+</html>
