@@ -23,7 +23,7 @@ const Login = () => {
     }
 
     setPasswordError(false);
-    navigate("/home"); // Redirige a Home.jsx
+    navigate("/users"); // Redirige a Home.jsx
   };
 
   return (

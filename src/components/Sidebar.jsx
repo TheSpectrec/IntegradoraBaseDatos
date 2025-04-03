@@ -58,13 +58,15 @@ function Sidebar({ isOpen, toggleSidebar }) {
         <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", justifyContent: "center" }}>
         <List>
   {/* Redirigir correctamente a Home */}
-  <ListItem button onClick={() => { navigate("/home"); toggleSidebar(); }}>
+  <ListItem button onClick={() => { navigate("/users"); toggleSidebar(); }}>
+ 
     <ListItemIcon><PeopleIcon sx={{ color: "white" }} /></ListItemIcon>
     <ListItemText primary="Usuarios" />
   </ListItem>
 
   {/* Redirigir correctamente a Residencias */}
-  <ListItem button onClick={() => { navigate("/residencias"); toggleSidebar(); }}>
+  <ListItem button onClick={() => { navigate("/houses"); toggleSidebar(); }}>
+
     <ListItemIcon><ApartmentIcon sx={{ color: "white" }} /></ListItemIcon>
     <ListItemText primary="Residencias" />
   </ListItem>

@@ -1,7 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "../../pages/Login";
-import Home from "../../pages/Home";
-import Residencias from "../../pages/Residencias";
+
+import GestionCasas from "../../pages/GestionCasas";
+import GestionUsuarios from "../../pages/GestionUsuarios";
 
 const AppRoutes = () => {
   return (
@@ -9,8 +10,8 @@ const AppRoutes = () => {
       {/* Página de login como inicio */}
       <Route path="/" element={<Login />} />
       {/* Rutas con Sidebar */}
-      <Route path="/home" element={<Home />} />
-      <Route path="/residencias" element={<Residencias />} />
+      <Route path="/users" element={<GestionUsuarios />} />
+      <Route path="/houses" element={<GestionCasas />} />
     </Routes>
   );
 };

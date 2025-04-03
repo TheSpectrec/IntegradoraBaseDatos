@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
+  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
   Typography,
+  Box
 } from "@mui/material";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import { CheckCircleOutline, HighlightOff } from "@mui/icons-material";
 import { motion } from "framer-motion";
 
-function ConfirmDeleteModal({ open, onClose, onConfirm, message }) {
+const ConfirmDeleteModal = ({
+  open,
+  onClose,
+  onConfirm,
+  tipo = "registro",
+  activo = true,
+  message = ""
+}) => {
+  const esActivar = !activo;
+  const tipoCapitalizado = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
+
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   const handleConfirm = async () => {
-    if (onConfirm) {
-      await onConfirm(); // espera si onConfirm es async
-    }
+    if (onConfirm) await onConfirm();
     setNotificationOpen(true);
   };
 
@@ -24,7 +33,7 @@ function ConfirmDeleteModal({ open, onClose, onConfirm, message }) {
     if (notificationOpen) {
       const timer = setTimeout(() => {
         setNotificationOpen(false);
-        onClose(); // cierra el modal después de mostrar éxito
+        onClose();
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -39,33 +48,74 @@ function ConfirmDeleteModal({ open, onClose, onConfirm, message }) {
   return (
     <>
       {/* Modal de Confirmación */}
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogContent sx={{ textAlign: "center", padding: "20px" }}>
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={animationVariants}
-          >
-            <HighlightOffIcon sx={{ fontSize: 80, color: "red" }} />
-          </motion.div>
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            ¿Estás seguro?
+      <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ textAlign: "center" }}>
+          <Box display="flex" justifyContent="center">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={animationVariants}
+            >
+              {esActivar ? (
+                <CheckCircleOutline sx={{ fontSize: 60, color: "green" }} />
+              ) : (
+                <HighlightOff sx={{ fontSize: 60, color: "red" }} />
+              )}
+            </motion.div>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent>
+          <Typography variant="h6" align="center" fontWeight="bold" gutterBottom>
+            {esActivar
+              ? `¿Deseas reactivar este ${tipoCapitalizado}?`
+              : `¿Deseas desactivar este ${tipoCapitalizado}?`}
           </Typography>
-          <Typography variant="body2">{message}</Typography>
+          <Typography align="center">
+            {message ||
+              (esActivar
+                ? `Estás a punto de volver a habilitar este ${tipo}.`
+                : `Estás a punto de desactivar temporalmente este ${tipo}.`)}
+          </Typography>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: "center", paddingBottom: "20px" }}>
-          <Button variant="contained" color="error" onClick={handleConfirm}>
-            Eliminar
+
+        <DialogActions sx={{ justifyContent: "center", mb: 2 }}>
+          <Button
+            variant="contained"
+            onClick={handleConfirm}
+            sx={{
+              backgroundColor: esActivar ? "#28a745" : "#d9534f",
+              color: "white",
+              borderRadius: "5px",
+              padding: "6px 16px",
+              '&:hover': {
+                backgroundColor: esActivar ? "#218838" : "#c82333",
+              }
+            }}
+          >
+            {esActivar ? "ACTIVAR" : "DESACTIVAR"}
           </Button>
-          <Button variant="outlined" onClick={onClose}>
-            Cancelar
+          <Button
+            variant="outlined"
+            onClick={onClose}
+            sx={{
+              color: "#007bff",
+              borderColor: "#007bff",
+              borderRadius: "5px",
+              padding: "6px 16px",
+              '&:hover': {
+                backgroundColor: "#f1f1f1"
+              }
+            }}
+          >
+            CANCELAR
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Notificación de éxito */}
-      <Dialog open={notificationOpen} maxWidth="sm" fullWidth>
+      {/* Modal de éxito */}
+      <Dialog open={notificationOpen} maxWidth="xs" fullWidth>
         <DialogContent sx={{ textAlign: "center", padding: "20px" }}>
           <motion.div
             initial="hidden"
@@ -73,7 +123,7 @@ function ConfirmDeleteModal({ open, onClose, onConfirm, message }) {
             exit="exit"
             variants={animationVariants}
           >
-            <CheckCircleOutlineIcon sx={{ fontSize: 80, color: "green" }} />
+            <CheckCircleOutline sx={{ fontSize: 80, color: "green" }} />
           </motion.div>
           <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
             Operación realizada con éxito
@@ -82,6 +132,6 @@ function ConfirmDeleteModal({ open, onClose, onConfirm, message }) {
       </Dialog>
     </>
   );
-}
+};
 
 export default ConfirmDeleteModal;
