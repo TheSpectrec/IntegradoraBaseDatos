@@ -1,23 +1,51 @@
-const jwt = require('jsonwebtoken');
-const SECRET = process.env.JWT_SECRET || 'secretoUltraSecreto';
+import { UserModel } from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+import messages from "../utils/messages.js";
+const { messageGeneral } = messages;
 
-exports.verifyToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Token requerido' });
+export const verificarToken = (req, res, next) => {
+  if (!req.headers.authorization) {
+    return messageGeneral(
+      res,
+      401,
+      false,
+      null,
+      "You are not authorized to access this resource 1"
+    );
+  }
+  const token = req.headers.authorization.split(" ")[1];
+  if (!token) {
+    return messageGeneral(
+      res,
+      401,
+      false,
+      null,
+      "You are not authorized to access this resource 2"
+    );
+  }
 
-  try {
-    const decoded = jwt.verify(token, SECRET);
-    req.user = decoded;
+  jwt.verify(token, "secreta", async (error, payload) => {
+    if (error) {
+      return messageGeneral(
+        res,
+        401,
+        false,
+        null,
+        "You are not authorized to access this resource 3"
+      );
+    }
+    const { _id } = payload;
+    const resp = await UserModel.findById(_id);
+    if (!resp) {
+      return messageGeneral(
+        res,
+        401,
+        false,
+        null,
+        "You are not authorized to access this resource 4"
+      );
+    }
+    req.userid = _id;
     next();
-  } catch (err) {
-    return res.status(403).json({ message: 'Token inválido o expirado' });
-  }
-};
-
-// Middleware para roles
-exports.requireRole = (role) => (req, res, next) => {
-  if (!req.user || req.user.tipoUsuario !== role) {
-    return res.status(403).json({ message: 'Acceso denegado' });
-  }
-  next();
+  });
 };

@@ -1,6 +1,9 @@
 // controllers/user.controller.js
 const userService = require('../services/user.service');
-const User = require('../models/user.model');
+const user = require('../models/user.model.js');
+const userRepository = require('../repositories/user.repository.js');
+const jwt = require('jsonwebtoken');
+
 
 exports.getAll = async (req, res) => {
   try {
@@ -40,5 +43,35 @@ exports.toggleEstado = async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: 'Error al cambiar estado', error: err.message });
+  }
+};
+
+exports.login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: "Usuario y contraseña son obligatorios" });
+    }
+
+    const user = await userService.login(username, password); // ✅ Usa el servicio
+
+    const token = jwt.sign({ _id: user._id }, "secreta", { expiresIn: '1h' });
+
+    console.log("✅ Usuario autenticado:", username);
+
+    return res.status(200).json({
+      success: true,
+      message: "Bienvenido",
+      data: {
+        _id: user._id,
+        username: user.username,
+        tipoUsuario: user.tipoUsuario,
+        token,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Error en login:", err);
+    return res.status(401).json({ success: false, message: err.message });
   }
 };

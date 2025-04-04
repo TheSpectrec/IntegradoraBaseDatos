@@ -1,5 +1,6 @@
-const House = require('../models/house.model'); // 👈 esto faltaba
-const User = require('../models/user.model');
+const bcrypt = require('bcryptjs');
+const User = require('../models/user.model.js');
+const userRepository = require('../repositories/user.repository.js');
 const mongoose = require('mongoose');
 
 exports.getUsers = async (estado) => {
@@ -15,10 +16,13 @@ exports.getUsers = async (estado) => {
   }
 };
 
-
 exports.createUser = async (data) => {
   data.username = data.username?.trim();
   data.tipoUsuario = data.tipoUsuario?.toUpperCase();
+
+  // 🔐 Hashear la contraseña antes de guardar
+  const salt = await bcrypt.genSalt(10);
+  data.password = await bcrypt.hash(data.password, salt);
 
   if (data.tipoUsuario === 'RESIDENTE') {
     if (!data.house_id || !mongoose.isValidObjectId(data.house_id)) {
@@ -72,4 +76,26 @@ exports.toggleEstado = async (id) => {
 
   user.enabled = !user.enabled;
   return await user.save();
+};
+
+exports.login = async (username, password) => {
+  if (!username || !password) {
+    throw new Error("Usuario y contraseña son obligatorios");
+  }
+
+  const usuario = await userRepository.getUserByUsername(username);
+  if (!usuario) {
+    throw new Error("Usuario o contraseña incorrectos");
+  }
+
+  const esPasswordValido = await bcrypt.compare(password, usuario.password);
+  if (!esPasswordValido) {
+    throw new Error("Usuario o contraseña incorrectos");
+  }
+
+  return {
+    _id: usuario._id,
+    username: usuario.username,
+    tipoUsuario: usuario.tipoUsuario
+  };
 };
