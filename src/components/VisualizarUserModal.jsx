@@ -7,7 +7,6 @@ import {
   Button,
   Typography,
   Box,
-  Divider,
 } from "@mui/material";
 
 const VisualizarUsuarioModal = ({ open, onClose, usuario }) => {
@@ -16,52 +15,64 @@ const VisualizarUsuarioModal = ({ open, onClose, usuario }) => {
   const estado = usuario.enabled ? "Activo" : "Inactivo";
   const colorEstado = usuario.enabled ? "green" : "red";
 
-  const tipo = usuario.tipoUsuario?.toLowerCase().replace(/^./, c => c.toUpperCase());
+  const tipoUsuarioRaw = usuario.tipoUsuario || "";
+  const tipoUsuario = tipoUsuarioRaw.toLowerCase();
+  const tipoCapitalizado = tipoUsuarioRaw.charAt(0).toUpperCase() + tipoUsuarioRaw.slice(1).toLowerCase();
 
-  const house = usuario.house || usuario.house_id; // por si viene como house_id
+  const house = usuario.house || usuario.house_id;
+  const isResidente = tipoUsuario === "residente";
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Detalles del Usuario</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth={isResidente ? "xs" : "xs"}
+      fullWidth
+    >
+      <DialogTitle sx={{ fontSize: "15px", pb: 0 }}>Detalles del Usuario</DialogTitle>
+
       <DialogContent>
-        <Typography><strong>Nombre:</strong> {usuario.nombre}</Typography>
-        <Typography><strong>Apellido:</strong> {usuario.apellido}</Typography>
-        <Typography><strong>Usuario:</strong> {usuario.username}</Typography>
-        <Typography><strong>Teléfono:</strong> {usuario.phone}</Typography>
-        <Typography><strong>Fecha de nacimiento:</strong> {usuario.birthday?.split("T")[0]}</Typography>
-        <Typography><strong>Tipo de Usuario:</strong> {tipo}</Typography>
-        <Typography sx={{ color: colorEstado, mt: 1 }}>
-          <strong>Estado:</strong> {estado}
-        </Typography>
+        <Box sx={{ fontSize: "12.5px", lineHeight: 1.4 }}>
+          <Typography><strong>Nombre:</strong> {usuario.nombre}</Typography>
+          <Typography><strong>Apellido:</strong> {usuario.apellido}</Typography>
+          <Typography><strong>Usuario:</strong> {usuario.username}</Typography>
+          <Typography><strong>Teléfono:</strong> {usuario.phone}</Typography>
+          <Typography><strong>Fecha de nacimiento:</strong> {usuario.birthday?.split("T")[0]}</Typography>
+          <Typography><strong>Tipo de Usuario:</strong> {tipoCapitalizado}</Typography>
+          <Typography sx={{ color: colorEstado, fontWeight: "bold", mt: 1 }}>
+            Estado: <span style={{ fontWeight: "normal" }}>{estado}</span>
+          </Typography>
 
-        {house && (
-          <>
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="h6">Residencia Asignada</Typography>
-            <Typography><strong>Calle:</strong> {house.address?.street}</Typography>
-            <Typography><strong>Ciudad:</strong> {house.address?.city}</Typography>
-            <Typography><strong>Código Postal:</strong> {house.address?.zip}</Typography>
+          {isResidente && house && (
+            <>
+              <Typography sx={{ mt: 1, fontWeight: "bold" }}>Residencia Asignada:</Typography>
+              <Typography><strong>Calle:</strong> {house.address?.street || "No disponible"}</Typography>
+              <Typography><strong>Ciudad:</strong> {house.address?.city || "No disponible"}</Typography>
+              <Typography><strong>Código Postal:</strong> {house.address?.zip || "No disponible"}</Typography>
+            </>
+          )}
 
-            {house.photo && (
-              <Box
-                component="img"
+          {isResidente && house?.photo && (
+            <Box sx={{ textAlign: "center", mt: 1 }}>
+              <img
                 src={`http://localhost:4000/uploads/${house.photo}`}
-                alt="Imagen de la casa"
-                sx={{
-                  width: "200px",
-                height: "150px",
-                objectFit: "cover",
-                borderRadius: "10px",
-                border: "1px solid #ccc"
+                alt="Casa"
+                style={{
+                  width: "auto",
+                  height: "200px",
+                  objectFit: "cover",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                  marginTop: "8px"
                 }}
               />
-            )}
-          </>
-        )}
+            </Box>
+          )}
+        </Box>
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" onClick={onClose} color="primary">
+        <Button onClick={onClose} variant="contained" size="small">
           Cerrar
         </Button>
       </DialogActions>

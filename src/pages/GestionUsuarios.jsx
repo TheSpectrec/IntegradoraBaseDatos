@@ -56,7 +56,7 @@ const GestionUsuarios = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <div style={{ flexGrow: 1, backgroundColor: '#D9D7CC', minHeight: '100vh', width: '100%' }}>
+      <div style={{ flexGrow: 1, backgroundColor: '#D9D7CC', maxHeight: '100vh', width: '100%' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem' }}>
           <h2 style={{ textAlign: 'center', color: 'black' }}>Gestión de Usuarios</h2>
 

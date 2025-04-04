@@ -11,7 +11,7 @@ function Layout() {
   const isLogin = location.pathname === "/"; // Ocultar layout si es login
 
   return (
-    <Box sx={{ width: "100vw", height: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ width: "100vw", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {!isLogin && <Topbar />}
       <Box sx={{ display: "flex", flexGrow: 1 }}>
         {!isLogin && (

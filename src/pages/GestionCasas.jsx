@@ -87,9 +87,9 @@ const GestionCasas = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <div style={{ flexGrow: 1, backgroundColor: '#D9D7CC', minHeight: '100vh', width: '100%' }}>
+      <div style={{ flexGrow: 1, backgroundColor: '#D9D7CC', Height: '100vh', width: '100%' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem' }}>
-          <h2 style={{ textAlign: 'center', color: 'black' }}>Gestión de Casas</h2>
+          <h2 style={{ textAlign: 'center', color: 'black' }}>Gestión de Residencias</h2>
           <div style={{
             background: '#F1F1F1',
             borderRadius: '20px',

@@ -9,7 +9,7 @@ export const axiosInstance = axios.create({
 });
 
 export const axiosFormData = axios.create({
-  baseURL: "http://localhost:4000/api", // sin /api
+  baseURL: "http://localhost:4000/api", // con /api
   headers: {
     "Content-Type": "multipart/form-data"
   }

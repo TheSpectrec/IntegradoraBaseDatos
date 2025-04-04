@@ -24,10 +24,11 @@ const VisualizarCasaModal = ({ open, onClose, casa }) => {
     : null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Detalles de la Casa</DialogTitle>
-      <DialogContent sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Box>
+
+      <DialogContent sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+        <Box sx={{ flexGrow: 1, maxWidth: 300 }}>
           <Typography><strong>Dirección:</strong> {direccion}</Typography>
           <Typography><strong>Descripción:</strong> {casa.description}</Typography>
           <Typography sx={{ color: colorEstado, mt: 1 }}>
@@ -36,13 +37,13 @@ const VisualizarCasaModal = ({ open, onClose, casa }) => {
         </Box>
 
         {urlImagen && (
-          <Box sx={{ ml: 3 }}>
+          <Box>
             <img
               src={urlImagen}
               alt="Casa"
               style={{
-                width: "200px",
-                height: "150px",
+                width: "160px",
+                height: "120px",
                 objectFit: "cover",
                 borderRadius: "10px",
                 border: "1px solid #ccc"
