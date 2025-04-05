@@ -8,6 +8,7 @@ import * as Yup from "yup";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { motion } from "framer-motion";
 import { axiosFormData } from "../config/axiosConfig"; // usa form-data
+import axios from "axios";
 
 const validationSchema = Yup.object({
   calle: Yup.string().required("La calle es obligatoria"),
@@ -22,10 +23,30 @@ const CasaModal = ({ open, onClose, residence, onSave }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [streetError, setStreetError] = useState("");
 
   const isEditMode = Boolean(residence && residence._id);
 
+  const checkStreetExists = async (street) => {
+    if (!street || (residence?.address?.street === street)) {
+      setStreetError("");
+      return;
+    }
+
+    try {
+      const res = await axios.get(`http://localhost:4000/api/houses/check-street`, {
+        params: { street: values.street }
+      });      
+      setStreetError(res.data.exists ? "Esta calle ya está registrada." : "");
+    } catch (error) {
+      console.error("Error al verificar la calle:", error);
+      setStreetError("No se pudo verificar la calle.");
+    }
+  };
+
   const handleSubmit = async (values) => {
+    if (streetError) return;
+
     try {
       const formData = new FormData();
       formData.append("street", values.calle);
@@ -96,18 +117,24 @@ const CasaModal = ({ open, onClose, residence, onSave }) => {
             onSubmit={handleSubmit}
             enableReinitialize
           >
-            {({ errors, touched, setFieldValue }) => (
+            {({ errors, touched, setFieldValue, handleChange, values }) => (
               <Form>
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
+                    <TextField
                       fullWidth
                       name="calle"
                       label="Calle *"
-                      error={touched.calle && Boolean(errors.calle)}
-                      helperText={touched.calle && errors.calle}
+                      value={values.calle}
+                      onChange={(e) => {
+                        handleChange(e);
+                        checkStreetExists(e.target.value);
+                        setFieldValue("calle", e.target.value);
+                      }}
+                      error={(touched.calle && Boolean(errors.calle)) || Boolean(streetError)}
+                      helperText={(touched.calle && errors.calle) || streetError}
                     />
+
                     <Field
                       as={TextField}
                       fullWidth
@@ -180,7 +207,12 @@ const CasaModal = ({ open, onClose, residence, onSave }) => {
                   <Button onClick={onClose} variant="contained" sx={{ backgroundColor: "#d9534f", color: "white", mr: 3 }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" variant="contained" sx={{ backgroundColor: "#5cb85c", color: "white" }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{ backgroundColor: "#5cb85c", color: "white" }}
+                    disabled={!!streetError}
+                  >
                     {isEditMode ? "Guardar Cambios" : "Registrar"}
                   </Button>
                 </Box>

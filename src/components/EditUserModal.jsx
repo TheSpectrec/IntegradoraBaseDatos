@@ -8,13 +8,26 @@ import * as Yup from "yup";
 import axios from "axios";
 
 const validationSchema = Yup.object({
-  nombre: Yup.string().required("El nombre es obligatorio"),
-  apellido: Yup.string().required("El apellido es obligatorio"),
-  username: Yup.string().required("El usuario es obligatorio"),
+  nombre: Yup.string().min(2, "Debe tener al menos 2 caracteres").max(50, "Máximo 50 caracteres").required("El nombre es obligatorio"),
+  apellido: Yup.string().min(2, "Debe tener al menos 2 caracteres").max(50, "Máximo 50 caracteres").required("El apellido es obligatorio"),
+  username: Yup.string().min(4, "Debe tener al menos 4 caracteres").max(30, "Máximo 30 caracteres").required("El usuario es obligatorio"),
   password: Yup.string().required("La contraseña es obligatoria"),
-  phone: Yup.string().matches(/^\d+$/, "Solo números").min(10).required("El teléfono es obligatorio"),
-  birthday: Yup.date().required("La fecha de nacimiento es obligatoria"),
-  tipoUsuario: Yup.string().oneOf(["ADMIN", "RESIDENTE", "GUARDIA"]).required("El tipo es obligatorio"),
+  phone: Yup.string().matches(/^\d{10}$/, "Debe ser un número de 10 dígitos").required("El teléfono es obligatorio"),
+  birthday: Yup.date()
+  .required("La fecha de nacimiento es obligatoria")
+  .test(
+    "is-18",
+    "El usuario debe ser mayor de 18 años",
+    function (value) {
+      if (!value) return false;
+      const today = new Date();
+      const birthDate = new Date(value);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      return age > 18 || (age === 18 && m >= 0 && today.getDate() >= birthDate.getDate());
+    }
+  ),
+  tipoUsuario: Yup.string().oneOf(["ADMIN", "RESIDENTE", "GUARDIA"]).required("El tipo de usuario es obligatorio"),
   enabled: Yup.boolean().required("El estado es obligatorio"),
   house_id: Yup.string().nullable(),
 });
@@ -23,16 +36,13 @@ const EditUserModal = ({ open, onClose, user, onSave }) => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [houses, setHouses] = useState([]);
+  const [usernameError, setUsernameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   useEffect(() => {
     axios.get("http://localhost:4000/api/houses")
       .then(res => {
-        // 👇 Esta es la línea clave
-        const housesData = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data.data)
-          ? res.data.data
-          : [];
+        const housesData = Array.isArray(res.data) ? res.data : Array.isArray(res.data.data) ? res.data.data : [];
         setHouses(housesData);
       })
       .catch(err => {
@@ -40,12 +50,38 @@ const EditUserModal = ({ open, onClose, user, onSave }) => {
         setHouses([]);
       });
   }, []);
-  
-  
 
-  if (!user) return null;
+  const handleUsernameCheck = async (username) => {
+    if (!username || username === user.username) {
+      setUsernameError("");
+      return;
+    }
+    try {
+      const res = await axios.get(`http://localhost:4000/api/users/check-username?username=${username}`);
+      setUsernameError(res.data.exists ? "Este nombre de usuario ya está en uso." : "");
+    } catch (error) {
+      console.error("Error al verificar username:", error);
+      setUsernameError("No se pudo verificar el usuario.");
+    }
+  };
+
+  const handlePhoneCheck = async (phone) => {
+    if (!phone || phone === user.phone) {
+      setPhoneError("");
+      return;
+    }
+    try {
+      const res = await axios.get(`http://localhost:4000/api/users/check-phone?phone=${phone}`);
+      setPhoneError(res.data.exists ? "Este teléfono ya está registrado." : "");
+    } catch (error) {
+      console.error("Error al verificar teléfono:", error);
+      setPhoneError("No se pudo verificar el teléfono.");
+    }
+  };
 
   const handleSubmit = async (values) => {
+    if (usernameError || phoneError) return;
+
     try {
       const payload = {
         nombre: values.nombre,
@@ -69,13 +105,15 @@ const EditUserModal = ({ open, onClose, user, onSave }) => {
     }
   };
 
+  if (!user) return null;
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", backgroundColor: "#f5f5f5" }}>
         Editar Usuario
       </DialogTitle>
       <Divider sx={{ backgroundColor: "#ccc", height: "1px", mb: 2 }} />
-      <DialogContent sx={{ p: 4, backgroundColor: "#fff" }}>
+      <DialogContent sx={{ px: 3, pt: 2, pb: 3, backgroundColor: "#fff" }}>
         <Formik
           initialValues={{
             nombre: user?.nombre || "",
@@ -94,17 +132,24 @@ const EditUserModal = ({ open, onClose, user, onSave }) => {
         >
           {({ values, errors, touched, handleChange, setFieldValue }) => (
             <Form>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth name="nombre" label="Nombre *" value={values.nombre}
                     onChange={handleChange} error={touched.nombre && !!errors.nombre}
                     helperText={touched.nombre && errors.nombre} />
+
                   <TextField fullWidth name="apellido" label="Apellido *" value={values.apellido}
                     onChange={handleChange} sx={{ mt: 2 }} error={touched.apellido && !!errors.apellido}
                     helperText={touched.apellido && errors.apellido} />
+
                   <TextField fullWidth name="username" label="Usuario *" value={values.username}
-                    onChange={handleChange} sx={{ mt: 2 }} error={touched.username && !!errors.username}
-                    helperText={touched.username && errors.username} />
+                    onChange={(e) => {
+                      handleChange(e);
+                      handleUsernameCheck(e.target.value);
+                    }}
+                    sx={{ mt: 2 }} error={touched.username && (!!errors.username || !!usernameError)}
+                    helperText={touched.username && (errors.username || usernameError)} />
+
                   <TextField fullWidth name="password" label="Contraseña *" type="password" value={values.password}
                     onChange={handleChange} sx={{ mt: 2 }} error={touched.password && !!errors.password}
                     helperText={touched.password && errors.password} />
@@ -112,8 +157,13 @@ const EditUserModal = ({ open, onClose, user, onSave }) => {
 
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth name="phone" label="Teléfono *" value={values.phone}
-                    onChange={handleChange} error={touched.phone && !!errors.phone}
-                    helperText={touched.phone && errors.phone} />
+                    onChange={(e) => {
+                      handleChange(e);
+                      handlePhoneCheck(e.target.value);
+                    }}
+                    error={touched.phone && (!!errors.phone || !!phoneError)}
+                    helperText={touched.phone && (errors.phone || phoneError)} />
+
                   <TextField fullWidth type="date" name="birthday" label="Nacimiento *"
                     InputLabelProps={{ shrink: true }} value={values.birthday}
                     onChange={handleChange} sx={{ mt: 2 }} error={touched.birthday && !!errors.birthday}
@@ -145,11 +195,11 @@ const EditUserModal = ({ open, onClose, user, onSave }) => {
                 </Grid>
               </Grid>
 
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
                 <Button onClick={onClose} variant="contained" sx={{ backgroundColor: "#d9534f", mr: 3 }}>
                   Cancelar
                 </Button>
-                <Button type="submit" variant="contained" sx={{ backgroundColor: "#5cb85c" }}>
+                <Button type="submit" variant="contained" sx={{ backgroundColor: "#5cb85c" }} disabled={!!usernameError || !!phoneError}>
                   Guardar Cambios
                 </Button>
               </Box>
