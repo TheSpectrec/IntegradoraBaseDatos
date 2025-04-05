@@ -75,3 +75,17 @@ exports.login = async (req, res) => {
     return res.status(401).json({ success: false, message: err.message });
   }
 };
+
+// user.controller.js
+exports.checkUsername = async (req, res) => {
+  const { username } = req.query;
+  const exists = await user.exists({ username });
+  res.json({ exists: Boolean(exists) });
+};
+
+exports.checkPhone = async (req, res) => {
+  const { phone } = req.query;
+  const exists = await user.exists({ phone });
+  res.json({ exists: Boolean(exists) });
+};
+

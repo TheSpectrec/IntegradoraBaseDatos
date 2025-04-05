@@ -9,10 +9,13 @@ route.get("/:id", houseCtrl.getHouse);
 route.post("/", houseCtrl.createHouse); // sin imagen
 route.put("/:id", houseCtrl.updateHouse);
 route.put("/status/:id", houseCtrl.toggleHouseStatus);
+route.get("/check-street", houseCtrl.checkStreet); // 👈 esta línea nueva
 
 // Ruta con imagen y datos usando multer
 route.post("/with-photo", upload.single("photo"), houseCtrl.createHouseWithPhoto);
 route.put("/with-photo/:id", upload.single("photo"), houseCtrl.updateHouseWithPhoto);
+
+
 
 
 export default route;

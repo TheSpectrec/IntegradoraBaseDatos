@@ -24,4 +24,16 @@ const changeStatus = async (id, status) => {
   return await HouseModel.findByIdAndUpdate(id, { status }, { new: true });
 };
 
-export default { findById, findAll, create, update, changeStatus };
+const findByStreet = async (street) => {
+  return await House.findOne({ "address.street": street });
+};
+
+export default {
+  // ...otros métodos
+  findAll,
+  findById,
+  create,
+  update,
+  changeStatus,
+  findByStreet // 👈 nuevo export
+};

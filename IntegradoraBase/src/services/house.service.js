@@ -15,10 +15,16 @@ const toggleHouseStatus = async (id) => {
   return await houseRepo.changeStatus(id, newStatus);
 };
 
+const existsByStreet = async (street) => {
+  const house = await houseRepo.findByStreet(street);
+  return !!house;
+};
+
 export default {
   getAllHouses,
   getHouseById,
   createHouse,
   updateHouse,
-  toggleHouseStatus
+  toggleHouseStatus,
+  existsByStreet // 👈 nuevo export
 };

@@ -7,6 +7,9 @@ router.post('/save', controller.create);
 router.put('/update/:id', controller.update);
 router.put('/status/:id', controller.toggleEstado);
 router.post('/login', controller.login);
+router.get("/check-username", controller.checkUsername);
+router.get("/check-phone", controller.checkPhone);
+
 
 
 module.exports = router;
