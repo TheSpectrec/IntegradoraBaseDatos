@@ -115,14 +115,15 @@ houseCtrl.updateHouseWithPhoto = async (req, res) => {
 
 houseCtrl.checkStreet = async (req, res) => {
   try {
-    const { street } = req.query;
-    if (!street) return messageGeneral(res, 400, false, "", "Calle requerida");
+    const { street } = req.params;
+    if (!street) return messageGeneral(res, 400, false, "", "Calle no proporcionada");
 
-    const exists = await houseService.existsByStreet(street.trim());
-    messageGeneral(res, 200, true, { exists }, "Verificación completada");
+    const exists = await houseService.existsByStreet(street);
+    messageGeneral(res, 200, true, { exists }, "Verificación de calle");
   } catch (error) {
     messageGeneral(res, 500, false, "", error.message);
   }
 };
+
 
 export default houseCtrl;

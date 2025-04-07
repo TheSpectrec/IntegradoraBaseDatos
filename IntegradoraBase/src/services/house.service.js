@@ -16,9 +16,17 @@ const toggleHouseStatus = async (id) => {
 };
 
 const existsByStreet = async (street) => {
-  const house = await houseRepo.findByStreet(street);
-  return !!house;
+  if (!street || street.trim().length < 3 || street.trim().length > 50) {
+    throw new Error("El nombre de la calle debe tener entre 3 y 50 caracteres.");
+  }
+
+  const allHouses = await houseRepo.findAll();
+  return allHouses.some(
+    (h) =>
+      h.address?.street?.trim().toLowerCase() === street.trim().toLowerCase()
+  );
 };
+
 
 export default {
   getAllHouses,

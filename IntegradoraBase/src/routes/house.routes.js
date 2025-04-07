@@ -4,12 +4,12 @@ import upload from "../middlewares/upload.js";
 
 const route = Router();
 
+route.get("/check-street/:street", houseCtrl.checkStreet); // debe ir primero
 route.get("/", houseCtrl.getHouses);
 route.get("/:id", houseCtrl.getHouse);
 route.post("/", houseCtrl.createHouse); // sin imagen
 route.put("/:id", houseCtrl.updateHouse);
 route.put("/status/:id", houseCtrl.toggleHouseStatus);
-route.get("/check-street", houseCtrl.checkStreet); // 👈 esta línea nueva
 
 // Ruta con imagen y datos usando multer
 route.post("/with-photo", upload.single("photo"), houseCtrl.createHouseWithPhoto);
