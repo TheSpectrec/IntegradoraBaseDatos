@@ -135,7 +135,7 @@ const GestionCasas = () => {
         onClose={() => setConfirmDeleteOpen(false)}
         onConfirm={handleConfirmDelete}
         message={`Ubicación: ${selectedCasa?.address?.street}, ${selectedCasa?.address?.city}`}
-        isActive={selectedCasa?.status === "activo"}
+        activo={selectedCasa?.status === "activo"}
       />
     </div>
   );

@@ -3,8 +3,9 @@ import {
   TableRow, IconButton, Paper, Box, Typography, Pagination
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import BlockIcon from "@mui/icons-material/Block";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const CasaTable = ({
   casas, onEdit, onToggle, onView,
@@ -17,11 +18,11 @@ const CasaTable = ({
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ position: 'sticky', top: 0, backgroundColor: '#8B4E2F', color: 'white', fontWeight: 'bold' }}>Dirección</TableCell>
-                <TableCell sx={{ position: 'sticky', top: 0, backgroundColor: '#8B4E2F', color: 'white', fontWeight: 'bold' }}>Ciudad</TableCell>
-                <TableCell sx={{ position: 'sticky', top: 0, backgroundColor: '#8B4E2F', color: 'white', fontWeight: 'bold' }}>Código Postal</TableCell>
-                <TableCell sx={{ position: 'sticky', top: 0, backgroundColor: '#8B4E2F', color: 'white', fontWeight: 'bold' }}>Estado</TableCell>
-                <TableCell sx={{ position: 'sticky', top: 0, backgroundColor: '#8B4E2F', color: 'white', fontWeight: 'bold' }}>Operaciones</TableCell>
+                <TableCell sx={stickyStyle}>Dirección</TableCell>
+                <TableCell sx={stickyStyle}>Ciudad</TableCell>
+                <TableCell sx={stickyStyle}>Código Postal</TableCell>
+                <TableCell sx={stickyStyle}>Estado</TableCell>
+                <TableCell sx={stickyStyle}>Operaciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -31,21 +32,34 @@ const CasaTable = ({
                     <TableCell>{casa.address?.street || "Sin dirección"}</TableCell>
                     <TableCell>{casa.address?.city}</TableCell>
                     <TableCell>{casa.address?.zip}</TableCell>
-                    <TableCell>{casa.status === "activo" ? "Activa" : "Inactiva"}</TableCell>
+                    <TableCell sx={{ color: casa.status === "activo" ? "green" : "red", fontWeight: "bold" }}>
+                      {casa.status === "activo" ? "Activa" : "Inactiva"}
+                    </TableCell>
                     <TableCell>
-<IconButton onClick={() => onView(casa)} title="Ver detalles">
-  <VisibilityIcon sx={{ color: "#1976d2" }} />
-</IconButton>
-                      <IconButton title="Editar" onClick={() => onEdit(casa)}><EditIcon /></IconButton>
-                      <IconButton title="Activar/Inactivar" onClick={() => onToggle(casa)}>
-                        <DeleteIcon sx={{ color: casa.status === "activo" ? "red" : "gray" }} />
+                      <IconButton onClick={() => onView(casa)} title="Ver detalles">
+                        <VisibilityIcon sx={{ color: "#1976d2" }} />
+                      </IconButton>
+                      <IconButton title="Editar" onClick={() => onEdit(casa)}>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        title={casa.status === "activo" ? "Desactivar" : "Activar"}
+                        onClick={() => onToggle(casa)}
+                      >
+                        {casa.status === "activo" ? (
+                          <BlockIcon sx={{ color: "red" }} />
+                        ) : (
+                          <CheckCircleIcon sx={{ color: "green" }} />
+                        )}
                       </IconButton>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">No hay casas registradas.</TableCell>
+                  <TableCell colSpan={5} align="center">
+                    No hay casas registradas.
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -66,6 +80,14 @@ const CasaTable = ({
       </Typography>
     </Box>
   );
+};
+
+const stickyStyle = {
+  position: 'sticky',
+  top: 0,
+  backgroundColor: '#8B4E2F',
+  color: 'white',
+  fontWeight: 'bold'
 };
 
 export default CasaTable;

@@ -7,16 +7,25 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { motion } from "framer-motion";
-import { axiosFormData } from "../config/axiosConfig"; // usa form-data
+import { axiosFormData } from "../config/axiosConfig";
 import axios from "axios";
 
 const validationSchema = Yup.object({
-  calle: Yup.string().required("La calle es obligatoria"),
-  ciudad: Yup.string().required("La ciudad es obligatoria"),
+  calle: Yup.string()
+    .min(3, "La calle debe tener al menos 3 caracteres")
+    .max(50, "La calle no puede exceder 50 caracteres")
+    .required("La calle es obligatoria"),
+  ciudad: Yup.string()
+    .min(3, "La ciudad debe tener al menos 3 caracteres")
+    .max(50, "La ciudad no puede exceder 50 caracteres")
+    .required("La ciudad es obligatoria"),
   codigoPostal: Yup.string()
-    .matches(/^\d{5}$/, "Debe tener 5 dígitos")
+    .matches(/^\d{5}$/, "Debe tener exactamente 5 dígitos")
     .required("El código postal es obligatorio"),
-  descripcion: Yup.string().required("La descripción es obligatoria"),
+  descripcion: Yup.string()
+    .min(10, "Debe tener al menos 10 caracteres")
+    .max(200, "No puede exceder 200 caracteres")
+    .required("La descripción es obligatoria"),
 });
 
 const CasaModal = ({ open, onClose, residence, onSave }) => {
@@ -28,26 +37,29 @@ const CasaModal = ({ open, onClose, residence, onSave }) => {
   const isEditMode = Boolean(residence && residence._id);
 
   const checkStreetExists = async (street) => {
-    if (!street || (residence?.address?.street === street)) {
-      setStreetError("");
-      return;
-    }
-
     try {
-      const res = await axios.get(`http://localhost:4000/api/houses/check-street`, {
-        params: { street: values.street }
-      });      
-      setStreetError(res.data.exists ? "Esta calle ya está registrada." : "");
-    } catch (error) {
-      console.error("Error al verificar la calle:", error);
-      setStreetError("No se pudo verificar la calle.");
+      const encodedStreet = encodeURIComponent(street.trim().toLowerCase());
+      const res = await axios.get(`http://localhost:4000/api/houses/check-street/${encodedStreet}`);
+      return res.data?.data?.exists === true;
+    } catch (err) {
+      console.error("Error al verificar la calle:", err);
+      return false;
     }
   };
+  
 
   const handleSubmit = async (values) => {
-    if (streetError) return;
-
     try {
+      const trimmedStreet = values.calle.trim().toLowerCase();
+  
+      if (!isEditMode) {
+        const exists = await checkStreetExists(trimmedStreet);
+        if (exists) {
+          setStreetError("La calle ya está registrada.");
+          return;
+        }
+      }  
+
       const formData = new FormData();
       formData.append("street", values.calle);
       formData.append("city", values.ciudad);
@@ -76,14 +88,15 @@ const CasaModal = ({ open, onClose, residence, onSave }) => {
   };
 
   useEffect(() => {
-    if (!open) setPreviewImage(null);
+    if (!open) {
+      setPreviewImage(null);
+      setStreetError("");
+    }
   }, [open]);
 
   useEffect(() => {
     if (residence?.photo) {
       setPreviewImage(`http://localhost:4000/uploads/${residence.photo}`);
-    } else {
-      setPreviewImage(null);
     }
   }, [residence]);
 
@@ -117,24 +130,28 @@ const CasaModal = ({ open, onClose, residence, onSave }) => {
             onSubmit={handleSubmit}
             enableReinitialize
           >
-            {({ errors, touched, setFieldValue, handleChange, values }) => (
+            {({ errors, touched, setFieldValue, values }) => (
               <Form>
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <Field
+                      as={TextField}
                       fullWidth
                       name="calle"
                       label="Calle *"
                       value={values.calle}
-                      onChange={(e) => {
-                        handleChange(e);
-                        checkStreetExists(e.target.value);
-                        setFieldValue("calle", e.target.value);
+                      onChange={async (e) => {
+                        const value = e.target.value;
+                        setFieldValue("calle", value);
+                        setStreetError("");
+                        if (!isEditMode && value.trim().length > 2) {
+                          const exists = await checkStreetExists(value.trim());
+                          if (exists) setStreetError("La calle ya está registrada.");
+                        }
                       }}
                       error={(touched.calle && Boolean(errors.calle)) || Boolean(streetError)}
                       helperText={(touched.calle && errors.calle) || streetError}
                     />
-
                     <Field
                       as={TextField}
                       fullWidth
@@ -207,12 +224,7 @@ const CasaModal = ({ open, onClose, residence, onSave }) => {
                   <Button onClick={onClose} variant="contained" sx={{ backgroundColor: "#d9534f", color: "white", mr: 3 }}>
                     Cancelar
                   </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    sx={{ backgroundColor: "#5cb85c", color: "white" }}
-                    disabled={!!streetError}
-                  >
+                  <Button type="submit" variant="contained" sx={{ backgroundColor: "#5cb85c", color: "white" }}>
                     {isEditMode ? "Guardar Cambios" : "Registrar"}
                   </Button>
                 </Box>
@@ -222,7 +234,6 @@ const CasaModal = ({ open, onClose, residence, onSave }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Modal de confirmación */}
       <Dialog open={Boolean(successMessage)} maxWidth="sm" fullWidth>
         <DialogContent sx={{ textAlign: "center", padding: "20px" }}>
           <motion.div

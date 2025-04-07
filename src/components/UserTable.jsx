@@ -3,7 +3,8 @@ import {
   IconButton, Paper, Pagination, Box, Typography
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import BlockIcon from '@mui/icons-material/Block';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useState, useEffect } from 'react';
 import EditUserModal from './EditUserModal';
@@ -80,7 +81,11 @@ const UserTable = ({ statusFilter, category, onDelete }) => {
                         <EditIcon />
                       </IconButton>
                       <IconButton onClick={() => onDelete(user)} title={user.enabled ? "Desactivar" : "Activar"}>
-                        <DeleteIcon sx={{ color: user.enabled ? "red" : "gray" }} />
+                        {user.enabled ? (
+                          <BlockIcon sx={{ color: "red" }} />
+                        ) : (
+                          <CheckCircleIcon sx={{ color: "green" }} />
+                        )}
                       </IconButton>
                     </TableCell>
                   </TableRow>
