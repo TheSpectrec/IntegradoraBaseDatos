@@ -1,9 +1,31 @@
-const router = require('express').Router();
-const ctrl = require('../controllers/rol.controller');
+import mongoose from 'mongoose';
 
-router.get('/', ctrl.getAll);
-router.post('/', ctrl.create);
-router.put('/:id', ctrl.update);
-router.delete('/:id', ctrl.remove);
+const visitaSchema = new mongoose.Schema({
+  fecha: { type: Date, required: true },
+  hora: { type: String, required: true },
+  numeroPersonas: { type: Number, required: true },
+  descripcion: { type: String, required: true },
+  tipoVisita: {
+    type: String,
+    enum: ['Familiar', 'Técnica'],
+    required: true
+  },
+  placasVehiculo: { type: String },
+  contrasena: { type: String }, // palabra visible, no se encripta
+  numeroCasa: { type: String, required: true },
+  nombreVisitante: { type: String, required: true },
+  estado: {
+    type: String,
+    enum: ['Pendiente', 'Aprobada', 'Cancelada'],
+    default: 'Pendiente'
+  },
+  residenteId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }
+}, {
+  timestamps: true
+});
 
-module.exports = router;
+export default mongoose.model('Visita', visitaSchema);

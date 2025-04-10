@@ -99,3 +99,5 @@ exports.login = async (username, password) => {
     tipoUsuario: usuario.tipoUsuario
   };
 };
+exports.findByUsername = (username) => User.findOne({ username });
+

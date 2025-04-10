@@ -7,7 +7,6 @@ import houseRoutes from "./src/routes/house.routes.js";
 import userRoutes from "./src/routes/user.routes.js";
 import rolRoutes from "./src/routes/rol.routes.js";
 import visitRoutes from "./src/routes/visit.routes.js";
-import visitTypeRoutes from "./src/routes/visitType.routes.js";
 
 // Conexión a la base de datos
 connectDB();
@@ -32,7 +31,6 @@ app.use("/api/users", userRoutes);           // JSON
 app.use("/api/houses", houseRoutes);         // form-data
 app.use("/api/roles", rolRoutes);            // JSON
 app.use("/api/visits", visitRoutes);         // JSON
-app.use("/api/visit-types", visitTypeRoutes); // JSON
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {

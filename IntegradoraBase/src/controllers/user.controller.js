@@ -1,14 +1,14 @@
-// controllers/user.controller.js
 const userService = require('../services/user.service');
-const user = require('../models/user.model.js');
+const UserModel = require('../models/user.model.js'); // ✅ renombrado para evitar conflicto
 const userRepository = require('../repositories/user.repository.js');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
-
+// ✅ Obtener todos los usuarios
 exports.getAll = async (req, res) => {
   try {
     const estado = req.query.estado || null;
-    const users = await userService.getUsers(estado); // ✅ Usa el servicio
+    const users = await userService.getUsers(estado);
     res.json(users);
   } catch (err) {
     console.error("Error al obtener usuarios:", err);
@@ -16,7 +16,7 @@ exports.getAll = async (req, res) => {
   }
 };
 
-
+// ✅ Crear usuario
 exports.create = async (req, res) => {
   try {
     console.log("📥 Payload recibido:", req.body);
@@ -28,6 +28,7 @@ exports.create = async (req, res) => {
   }
 };
 
+// ✅ Actualizar usuario
 exports.update = async (req, res) => {
   try {
     const updated = await userService.updateUser(req.params.id, req.body);
@@ -37,6 +38,7 @@ exports.update = async (req, res) => {
   }
 };
 
+// ✅ Cambiar estado (activar/desactivar)
 exports.toggleEstado = async (req, res) => {
   try {
     const updated = await userService.toggleEstado(req.params.id);
@@ -46,19 +48,27 @@ exports.toggleEstado = async (req, res) => {
   }
 };
 
+// ✅ Login para plataforma web
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ success: false, message: "Usuario y contraseña son obligatorios" });
+      return res.status(400).json({
+        success: false,
+        message: "Usuario y contraseña son obligatorios"
+      });
     }
 
-    const user = await userService.login(username, password); // ✅ Usa el servicio
+    const user = await userService.login(username, password);
 
-    const token = jwt.sign({ _id: user._id }, "secreta", { expiresIn: '1h' });
+    const token = jwt.sign(
+      { _id: user._id, tipoUsuario: user.tipoUsuario },
+      process.env.JWT_SECRET || "secreta",
+      { expiresIn: '1h' }
+    );
 
-    console.log("✅ Usuario autenticado:", username);
+    console.log("✅ Usuario autenticado (web):", username);
 
     return res.status(200).json({
       success: true,
@@ -67,25 +77,88 @@ exports.login = async (req, res) => {
         _id: user._id,
         username: user.username,
         tipoUsuario: user.tipoUsuario,
-        token,
-      },
+        token
+      }
     });
   } catch (err) {
-    console.error("❌ Error en login:", err);
-    return res.status(401).json({ success: false, message: err.message });
+    console.error("❌ Error en login web:", err);
+    return res.status(401).json({
+      success: false,
+      message: err.message || 'Error al iniciar sesión'
+    });
   }
 };
 
-// user.controller.js
+// ✅ Login para app móvil (residente o guardia)
+exports.loginUser = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Usuario y contraseña son obligatorios'
+      });
+    }
+
+    const user = await userService.findByUsername(username); // ⚠️ Este es el usuario real
+
+    if (!user) return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ success: false, message: 'Contraseña incorrecta' });
+
+    // Aquí realizamos el populate para la casa asociada al usuario
+    await user.populate('house_id');  // Poblamos la casa asociada al usuario
+
+    const token = jwt.sign(
+      { id: user._id, tipoUsuario: user.tipoUsuario },
+      process.env.JWT_SECRET || 'secreto123',
+      { expiresIn: '1d' }
+    );
+
+    // ✅ Imprimir datos enviados para verificar
+    console.log('🧠 Usuario logueado en app:', {
+      _id: user._id,
+      username: user.username,
+      nombre: user.nombre,
+      apellido: user.apellido,
+      tipoUsuario: user.tipoUsuario,
+      phone: user.phone,
+      birthday: user.birthday,
+      house_id: user.house_id  // Ahora la casa tiene toda la información
+    });
+
+    return res.json({
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        tipoUsuario: user.tipoUsuario,
+        phone: user.phone,
+        birthday: user.birthday,
+        house_id: user.house_id // Aquí ya se incluye toda la información de la casa
+      }
+    });
+  } catch (err) {
+    console.error('❌ Error en loginUser:', err);
+    res.status(500).json({ success: false, message: 'Error del servidor' });
+  }
+};
+
+
+// ✅ Verificar si existe un username
 exports.checkUsername = async (req, res) => {
   const { username } = req.query;
-  const exists = await user.exists({ username });
+  const exists = await UserModel.exists({ username });
   res.json({ exists: Boolean(exists) });
 };
 
+// ✅ Verificar si existe un teléfono
 exports.checkPhone = async (req, res) => {
   const { phone } = req.query;
-  const exists = await user.exists({ phone });
-  res.json({ exists: Boolean(exists) });
+  const exists = await UserModel.exists({ phone });
+        res.json({ exists: Boolean(exists) });
 };
-
