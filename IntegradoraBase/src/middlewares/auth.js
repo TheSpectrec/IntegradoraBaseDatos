@@ -1,4 +1,4 @@
-import { UserModel } from "../models/user.model.js";
+import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import messages from "../utils/messages.js";
 const { messageGeneral } = messages;
@@ -35,7 +35,7 @@ export const verificarToken = (req, res, next) => {
       );
     }
     const { _id } = payload;
-    const resp = await UserModel.findById(_id);
+    const resp = await User.findById(_id);
     if (!resp) {
       return messageGeneral(
         res,

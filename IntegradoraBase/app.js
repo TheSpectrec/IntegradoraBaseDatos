@@ -14,6 +14,16 @@ connectDB();
 const app = express();
 const PORT = 4000;
 
+const allowedOrigins = [
+  'http://localhost:4000',
+  'https://staging.d1ep2v2o8kjxai.amplifyapp.com/' //cambiar por el de ustedes de amplify.
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 // Configuración básica
 app.set("port", PORT);
 

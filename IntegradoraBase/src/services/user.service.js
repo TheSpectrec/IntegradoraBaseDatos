@@ -49,6 +49,15 @@ exports.updateUser = async (id, data) => {
   data.username = data.username?.trim();
   data.tipoUsuario = data.tipoUsuario?.toUpperCase();
 
+  // 🔐 Encriptar nueva contraseña solo si se proporciona
+  if (data.password) {
+    const salt = await bcrypt.genSalt(10);
+    data.password = await bcrypt.hash(data.password, salt);
+  } else {
+    delete data.password; // No modificar la contraseña si no se envía
+  }
+
+  // Validación de casa para RESIDENTE
   if (data.tipoUsuario === 'RESIDENTE') {
     if (!data.house_id || !mongoose.isValidObjectId(data.house_id)) {
       throw new Error('Se requiere una casa válida para un residente.');
@@ -69,6 +78,7 @@ exports.updateUser = async (id, data) => {
 
   return await User.findByIdAndUpdate(id, data, { new: true }).populate('house_id');
 };
+
 
 exports.toggleEstado = async (id) => {
   const user = await User.findById(id);
